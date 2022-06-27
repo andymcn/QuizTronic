@@ -1,0 +1,28 @@
+{
+	"folders": [
+		{
+			"name": "Firmware",
+			"path": ".."
+		},
+		{
+			"path": "C:\\Users\\Beast\\.platformio\\platforms\\espressif32\\examples"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"esp_log.h": "c",
+			"gpio.h": "c",
+			"esp_types.h": "c",
+			"freertos.h": "c",
+			"param.h": "c",
+			"task.h": "c",
+			"event_groups.h": "c",
+			"nvs_flash.h": "c",
+			"sys.h": "c",
+			"err.h": "c",
+			"sockets.h": "c",
+			"periph_ctrl.h": "c",
+			"audio.h": "c"
+		}
+	}
+}

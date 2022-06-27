@@ -1,0 +1,121 @@
+Each buzzer unit has:
+* 1 button + LED
+* 1 sounder
+* 2 status LEDs, 1 red and 1 green
+
+Buzzers are hardcoded with which team they're in, reflected in the button colour.
+Currently we have 4 teams, but allow for 8.
+
+Each buzzer has a unique ID, set with links. Used to identify dodgy buttons, etc. Also specifies the team (3 msbs).
+
+Pins required:
+Button			1
+Button LED		1
+State LEDs		2
+Sounder			1
+ID (links)		7
+Total			12
+
+Mode	Button LED	Sounder	Status LEDs	Sampling button	Sending heartbeats	Extra info
+Init	Off			Off		Red			No				No					Connecting to WIFI and then server
+Ready	Off			Off		Green		Yes				Yes					-
+On		On			On		Green		No				Yes					Sounder on for 1 second or until button released or state changed.
+
+
+Group operation.
+
+At start:
+All to Ready.
+
+To test working:
+All to Ready.
+When press received set that buzzer to On. After 2 seconds set buzzer to Ready.
+
+For questions:
+All to Ready.
+When first press received set that buzzer to Win.
+Ignore further presses.
+
+
+All commands single bytes.
+
+Commands from control to buzzers:
+0x20..0x23	Mode(buzzer on, led on)
+
+Commands from buzzers to control:
+0x00..0x1F	Version(version)
+0x30		Button press
+0x31		Heartbeat
+0x7F		Error
+0x80..0xFF	Hello(ID)
+
+
+
+
+Wifi details:
+SSID:     BeastQuiz
+Password: SassThatHoopyFordPrefect
+Server:   192.168.2.5
+Subnet:   192.168.2.0/24
+
+
+
+
+
+
+Quiz:
+x Printed quiz
+x Anagram sheets
+  Serenity
+  Serenity charger
+x Whiteboards
+x Whiteboard pens
+  Skittles
+  Bag for Skittles
+  Bag for 4th place decant
+  Spare batteries
+  Access point + power wart
+
+  Sander
+  Multitool
+  Welding mask
+  Angle grinder
+
+  Hard disks (8 for AndyC + 12? for Alan)
+  Server form Alan?
+
+
+
+  Software logging
+x Software run a buzzer question
+x Software question auto update score and carry on
+x Software blank line
+  Go compilation on Serenity
+  Build app and test on Serenity
+x Investigate Wifi connect failures
+? Change to static IPs
+x Test v4 firmware
+x Update all buzzers to v4
+x Finish coming up with quiz questions
+x Randomise quiz questions
+x Verify quiz questions
+x Print quiz, including anagrams
+x Check Serenity
+x Solder remaining Firebeetle's
+x Finish building buzzers
+x Check for missing washer
+x Test all buzzers
+x 32+1 test
+x Email quiz
+x Shave
+x Shower
+x Go through tool kit
+x Washing
+x Drying
+x Check shorts for camp
+x Re-read timing email
+x Get prizes from Sainsbury's or Morrison's? + talcum powder + suntan lotion?
+
+x Check simanager Ceph install
+x Release simanager rc2
+

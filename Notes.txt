@@ -1,0 +1,28 @@
+Big button lamp currents.
+
+Colour	3.3V	4.5V
+Green	1.8mA	4.0mA
+Red		3.2mA	5.7mA
+Blue	1.4mA	3.8mA
+White	1.3mA	3.6mA
+
+
+Piezo transducers.
+
+Unit	Current			Volume
+		@4.5V static	@500Hz, 4.5V
+T5L2	51mA			3
+SD16	64mA			5
+B5N2	64mA			4
+
+
+PCB bolt
+M3 x 12mm - 15mm cheese head
++ 4 nuts
+
+Battery bolt
+M3 x 7mm+ countersunk
++ 1 nut
+
+
+Small cable ties x 100

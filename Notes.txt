@@ -7,22 +7,30 @@ Blue	1.4mA	3.8mA
 White	1.3mA	3.6mA
 
 
-Piezo transducers.
-
-Unit	Current			Volume
-		@4.5V static	@500Hz, 4.5V
-T5L2	51mA			3
-SD16	64mA			5
-B5N2	64mA			4
+Piezo transducer current @4.5V static = 64mA
 
 
-PCB bolt
-M3 x 12mm - 15mm cheese head
-+ 4 nuts
 
-Battery bolt
-M3 x 7mm+ countersunk
-+ 1 nut
+Thoughts after first real use:
+  qb|g|r|y was useless, the quiz didn't work like that.
+  Scoring for bonus questions was a massive pain, especially the double marks.
+    Better would be something to say "this list of teams each got the bonus question right", handling doubles automatically.
+    Eg: b b? g? r? y?
+  Separate into streams:
+    Connectivity, including which buttons are connected, slow heartbeats, etc.
+    Scoring. Definitely should be logged.
+      When printing scores add (1st), (2nd), etc markers.
+    Quiz control.
+    Input separate to all? Only outputs command errors.
+  Occasional slow heartbeats from lots of boxes. Interference? What channel am I using? Ask AP. 
 
 
-Small cable ties x 100
+
+Todo:
+  Update this info
+  Write proper docs
+  Software logging
+? Change to static IPs
+  Make 4 more of each colour
+  Make custom storage box. Flight case with cut foam?
+

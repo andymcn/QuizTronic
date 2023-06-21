@@ -1,5 +1,7 @@
 /* Functions for communicating with physical buzzers.
 
+Each Buzzer object represents one physical buzzer.
+
 */
 
 package main
@@ -11,10 +13,9 @@ import "net"
 // External interface.
 
 // Create a Buzzer object based on the given connection and start processing incoming messages.
-func HandleNode(conn net.Conn, controller *Controller, swarm *Swarm) {
+func HandleNode(conn net.Conn, swarm *Swarm) {
     var p Buzzer
     p.conn = conn
-    p.controller = controller
     p.swarm = swarm
     p.id = 0xFF
     p.sends = make(chan []byte, 100)
@@ -55,21 +56,36 @@ func (this *Buzzer) ID() string {
 
 // Convert the given buzzer ID to a string.
 func BuzzerIdToString(id int) string {
-    team := (id >> 4) & 7
-    return fmt.Sprintf("%s%d", _teamLetters[team], id & 15)
+    team, index := BuzzerIdToTeam(id)
+    return fmt.Sprintf("%s%d", _teamLetters[team], index)
 }
 
 
 // Convert the given team ID to a string.
+// TODO: Move team count, names and ID conversions to another file.
 func TeamIdToString(id int) string {
     return _teamLetters[id]
+}
+
+
+// Convert the given buzzer ID to a team and index.
+func BuzzerIdToTeam(id int) (team int, index int) {
+    team = (id >> 4) & 7
+    index = id & 15
+    return team, index
+}
+
+
+// Convert the given team and index to a buzzer ID.
+func TeamToBuzzerId(team int, index int) int {
+    return (team << 4) | index
 }
 
 
 // Object to represent a physical buzzer with which we're communicating.
 type Buzzer struct {
     conn net.Conn
-    controller *Controller
+    // controller *Controller
     id int
     swarm *Swarm
     buzzerVersion byte
@@ -98,13 +114,12 @@ func (this *Buzzer) processOutgoing() {
         b := <-this.sends
         _, err := this.conn.Write(b)
         if err != nil {
-            fmt.Printf("Failure to send mode message to buzzer %d, disconnecting\n", this.id)
+            this.swarm.Log("Failure to send mode message to buzzer %d, disconnecting\n", this.id)
             this.Disconnect()
             return
         }
     }
 }
-
 
 
 // Handles incoming requests.
@@ -128,16 +143,15 @@ func (this *Buzzer) processIncoming() {
 
         case MsgButtonPress:
             // Button press. This needs to be reported.
-            // fmt.Printf("Button press from %s\n", this.ID())
-            this.controller.ButtonPress(this.id)
+            this.swarm.ButtonPress(this.id)
 
         case MsgError:
             // Error message. This needs to be reported.
             // TODO
-            fmt.Printf("Error message received from %s\n", this.ID())
+            this.swarm.Log("Error message received from %s\n", this.ID())
 
         default:
-            fmt.Printf("Unrecognised message 0x%02X received from %s\n", b, this.ID())
+            this.swarm.Log("Unrecognised message 0x%02X received from %s\n", b, this.ID())
         }
     }
 }
@@ -153,7 +167,7 @@ func (this *Buzzer) processHandshake() bool {
     this.swarm.Received(this.id)
     msg, value := this.decodeMessage(b)
     if msg != MsgVersion {
-        fmt.Printf("Expected version from new buzzer, got 0x%02X\n", value)
+        this.swarm.Log("Expected version from new buzzer, got 0x%02X\n", value)
         return false
     }
 
@@ -165,16 +179,16 @@ func (this *Buzzer) processHandshake() bool {
 
     msg, value = this.decodeMessage(b)
     if msg != MsgId {
-        fmt.Printf("Expected ID from new buzzer, got 0x%02X\n", value)
+        this.swarm.Log("Expected ID from new buzzer, got 0x%02X\n", value)
         return false
     }
 
     this.id = int(value)
 
     if this.buzzerVersion == BuzzerExpectedVersion {
-        fmt.Printf("Found buzzer %s (v:%d)\n", this.ID(), this.buzzerVersion)
+        this.swarm.Log("Found buzzer %s (v:%d)\n", this.ID(), this.buzzerVersion)
     } else {
-        fmt.Printf("Found buzzer %s with unexpected version %d\n", this.ID(), this.buzzerVersion)
+        this.swarm.Log("Found buzzer %s with unexpected version %d\n", this.ID(), this.buzzerVersion)
     }
 
     this.swarm.NewBuzzer(this.id, this)
@@ -209,7 +223,7 @@ func (this *Buzzer) decodeMessage(b byte) (msg MsgTypeEnum, param byte) {
         return MsgError, 0
 
     default:
-        fmt.Printf("Unrecognised message 0x%02X from buzzer %s\n", b, this.ID())
+        this.swarm.Log("Unrecognised message 0x%02X from buzzer %s\n", b, this.ID())
         return MsgUnknown, b
     }
 }
@@ -231,7 +245,7 @@ func (this *Buzzer) getMessageByte() (b byte, ok bool) {
     // Get the next message byte.
     _, err := this.conn.Read(this.buffer)
     if err != nil {
-        fmt.Printf("Failure receiving from %s\n", this.ID())
+        this.swarm.Log("Failure receiving from %s\n", this.ID())
         this.Disconnect()
         return 0, false
     }

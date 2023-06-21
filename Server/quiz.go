@@ -1,7 +1,5 @@
 /* Initialisation.
 
-
-
 Ready
 > cont
 Q1 ...
@@ -54,19 +52,21 @@ import "os"
 
 
 func main() {
-    cmdProc := CreateCommandProcessor()
-    scoreboard := CreateScoreboard(cmdProc)
-    controller := CreateController(cmdProc, scoreboard)
-    swarm := CreateSwarm(cmdProc, controller)
-    controller.Run(swarm)
+    engine, swarm := CreateEngine()
+    scoreboard := CreateScoreboard(engine)
+    scoreboard.Print()
 
-    go listen(controller, swarm)
+    CreateTestMode(engine)
+    CreateMultipleChoice(engine, scoreboard)
+    CreateQuickFire(engine, scoreboard)
 
-    cmdProc.ProcessStdin()
+    go listen(swarm)
+
+    engine.Run()
 }
 
 
-func listen(controller *Controller, swarm *Swarm) {
+func listen(swarm *Swarm) {
     // Listen for incoming connections.
     listener, err := net.Listen("tcp", ":9753")
     if err != nil {
@@ -88,6 +88,6 @@ func listen(controller *Controller, swarm *Swarm) {
         }
 
         // Handle connections in a new goroutine.
-        HandleNode(conn, controller, swarm)
+        HandleNode(conn, swarm)
     }
 }

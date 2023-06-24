@@ -21,7 +21,7 @@ func CreateTestMode(engine *Engine) *TestMode {
     var p TestMode
     p.engine = engine
 
-    engine.RegisterCmd(p.commandEnterTestMode, "Enter test mode", 't')
+    engine.RegisterModal(p.commandEnterTestMode, "test mode", "Enter test mode", 't')
 
     return &p
 }
@@ -78,6 +78,7 @@ func (this *TestMode) commandExit(values []int) {
     // Unregister everything we temporarily registered.
     this.engine.DeregisterCmd(this.commandExit, 'q')
     this.engine.DeregisterButtons(this.button)
+    this.engine.ModalComplete()
 
     // De-illuminate all buzzers.
     this.engine.SetModeAll(false, false)

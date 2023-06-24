@@ -26,7 +26,8 @@ func CreateMultipleChoice(engine *Engine, scoreboard *Scoreboard) *MultipleChoic
     p.engine = engine
     p.scoreboard = scoreboard
 
-    engine.RegisterCmd(p.commandNewQuestion, "Start a multiple choice question", 'm', ARG_MULTIPLE_CHOICE, ARG_MARKS)
+    engine.RegisterModal(p.commandNewQuestion, "multiple choice", "Start a multiple choice question", 'm',
+        ARG_MULTIPLE_CHOICE, ARG_MARKS)
 
     return &p
 }
@@ -172,6 +173,7 @@ func (this *MultipleChoice) finish() {
     this.engine.DeregisterCmd(this.commandComplete, 'y')
     this.engine.DeregisterCmd(this.commandCancel, 'q')
     this.engine.DeregisterButtons(this.button)
+    this.engine.ModalComplete()
 
     // De-illuminate all multiple choice buzzers.
     this.engine.SetModeAll(false, false)

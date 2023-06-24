@@ -4,6 +4,10 @@ The engine receives asynchronous button press messages and commands from stdin, 
 have registered interest in them. It also provides an access point for those entities to affect the state of the
 buzzers.
 
+Any given command may be specified as "modal" when it is registered. Only one modal command may be run at a time. This
+is intended for relatively long lived operations that maintain state on the buzzers, such as test mode and multiple
+choice questions. Modal commands must inform the engine when they are complete.
+
 All engine functions and methods must be called only in the main thread, unless otherwise stated.
 
 */
@@ -28,6 +32,8 @@ func CreateEngine() (*Engine, *Swarm) {
     p.swarm = swarm
 
     p.RegisterCmd(p.usage, "Help", '?')
+    p.RegisterCmd(p.commandReportModal, "Report current modal", 'd')
+    p.RegisterCmd(p.commandForceModalClear, "Force clear current modal", 'c')
 
     return &p, swarm
 }
@@ -67,6 +73,20 @@ func (this *Engine) Run() {
 // and given command character at a time.
 // All command handler callbacks will occur within the main engine thread.
 func (this *Engine) RegisterCmd(handler CmdHandler, help string, cmd byte, args ...ArgType) {
+    this.RegisterModal(handler, "", help, cmd, args...)
+}
+
+// Function to handle a specific command.
+type CmdHandler func (argValues []int)
+
+
+// Register the given modal command handler.
+// The command is specified as a single leading character of the command line. There can only ever be one handler for
+// and given command character at a time.
+// The desc parameter is used for error reporting and must not be blank.
+// When the modal command completes, ModalComplete() must be called.
+// All command handler callbacks will occur within the main engine thread.
+func (this *Engine) RegisterModal(handler CmdHandler, desc string, help string, cmd byte, args ...ArgType) {
     _, ok := this.commands[cmd]
     if ok {
         fmt.Printf("Error: Request to register already registered command %v\n", cmd)
@@ -74,14 +94,12 @@ func (this *Engine) RegisterCmd(handler CmdHandler, help string, cmd byte, args 
 
     var p cmdInfo
     p.handler = handler
+    p.desc = desc
     p.helpText = help
     p.initialChar = cmd
     p.argTypes = args
     this.commands[cmd] = &p
 }
-
-// Function to handle a specific command.
-type CmdHandler func (argValues []int)
 
 
 // Deregister the given, previously registered command handler.
@@ -93,6 +111,17 @@ func (this *Engine) DeregisterCmd(handler CmdHandler, cmd byte) {
     }
 
     delete(this.commands, cmd)
+}
+
+
+// Signify that the current modal command is complete.
+func (this *Engine) ModalComplete() {
+    // Just clear the current modal description.
+    if this.modalDesc == "" {
+        fmt.Printf("Error: Request to complete current modal, while not in a modal\n")
+    }
+
+    this.modalDesc = ""
 }
 
 
@@ -146,6 +175,7 @@ type Engine struct {
     rawCmdLines chan string
     pressIds chan int  // Button ID for each press event.
     buttonHandler ButtonHandler
+    modalDesc string
     swarm *Swarm
     commands map[byte]*cmdInfo  // Indexed by leading char.
 }
@@ -153,6 +183,7 @@ type Engine struct {
 // Info needed for a single command.
 type cmdInfo struct {
     handler CmdHandler
+    desc string
     helpText string
     initialChar byte
     argTypes []ArgType
@@ -182,7 +213,17 @@ func (this *Engine) processCommand(cmdLine string) {
         // Error has already been reported.
         return
     }
-    // TODO: Parse args.
+
+    // Check modals.
+    if cmd.desc != "" {
+        if this.modalDesc != "" {
+            fmt.Printf("Cannot start modal %s, %s already in operation\n", cmd.desc, this.modalDesc)
+            return
+        }
+
+        this.modalDesc = cmd.desc
+    }
+
     cmd.handler(argValues)
 }
 
@@ -228,4 +269,20 @@ func (this *Engine) usage([]int) {
 
         fmt.Printf("  %c%-15s  %s\n", cmd.initialChar, args, cmd.helpText)
     }
+}
+
+
+// Report modal command currently in effect, if any.
+func (this *Engine) commandReportModal([]int) {
+    if this.modalDesc == "" {
+        fmt.Printf("No modal command in operation\n");
+    } else {
+        fmt.Printf("Current modal command %s\n", this.modalDesc)
+    }
+}
+
+
+// Force the current modal command state to clear.
+func (this *Engine) commandForceModalClear([]int) {
+    this.modalDesc = ""
 }

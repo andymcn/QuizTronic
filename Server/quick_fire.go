@@ -29,7 +29,7 @@ func CreateQuickFire(engine *Engine, scoreboard *Scoreboard) *QuickFire {
     p.engine = engine
     p.scoreboard = scoreboard
 
-    engine.RegisterCmd(p.commandNewQuestion, "Start a quick fire question", 'f', ARG_MARKS)
+    engine.RegisterModal(p.commandNewQuestion, "quick fire", "Start a quick fire question", 'f', ARG_MARKS)
 
     return &p
 }
@@ -198,6 +198,8 @@ func (this *QuickFire) finish() {
         this.engine.DeregisterCmd(this.commandCorrect, 'y')
         this.engine.DeregisterCmd(this.commandIncorrect, 'n')
     }
+
+    this.engine.ModalComplete()
 
     // De-illuminate all buzzers.
     this.engine.SetModeAll(false, false)

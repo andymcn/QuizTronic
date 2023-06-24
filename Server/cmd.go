@@ -132,7 +132,7 @@ func expectChar(cmdLine *string, expected string, min byte, max byte, caseInsens
     if !ok { return 0, false }
 
     charOrig := char
-    if caseInsensitive { char &= 0xEF }
+    if caseInsensitive { char &= 0xDF }
 
     if (char < min) || (char > max) {
         fmt.Printf("Bad command, expected %s, got \"%c\"\n", expected, charOrig)
